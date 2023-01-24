@@ -52,3 +52,264 @@ Command to login to mysql in cloudera is show below ...
 [cloudera@quickstart ~]$ mysql -u root -p
 Enter password:cloudera
 
+creating a new table for my own purpose
+
+
+create table stgtbl (
+ slno int,
+ agent varchar(55)  ,
+ date_tbl varchar(55),
+ login varchar(55),
+ timelogout varchar(55),
+ timeduration varchar(55)
+);
+ 
+ load the data from .csv file  to sql table use the command as below 
+ 
+ load data infile '/home/cloudera/agentlogingreport1.csv' into table stgtbl fields terminated by '\t' ;
+
+Download Dataset 1 - https://drive.google.com/file/d/1WrG-9qv6atP-W3P_-gYln1hHyFKRKMHP/view
+
+Download Dataset 2 - https://drive.google.com/file/d/1-JIPCZ34dyN6k9CqJa-Y8yxIGq6vTVXU/view
+
+Note: both files are csv files. 
+
+mysql> select * from stgtbl limit 10;
++------+--------------------+-----------+----------+------------+--------------+
+| slno | agent              | date_tbl  | login    | timelogout | timeduration |
++------+--------------------+-----------+----------+------------+--------------+
+     | | Shivananda Sonwane | 30-Jul-22 | 15:35:29 | 17:39:39   | 2:04:10
+     | | Khushboo Priya     | 30-Jul-22 | 15:06:59 | 15:07:16   | 0:00:17
+     | | Nandani Gupta      | 30-Jul-22 | 15:04:24 | 17:31:07   | 2:26:42
+     | | Hrisikesh Neogi    | 30-Jul-22 | 14:34:29 | 15:19:35   | 0:45:06
+     | | Mukesh             | 30-Jul-22 | 14:03:15 | 15:11:52   | 1:08:36
+     | | Sowmiya Sivakumar  | 30-Jul-22 | 14:03:11 | 15:05:37   | 1:02:26
+     | | Manjunatha A       | 30-Jul-22 | 14:00:12 | 15:08:29   | 1:08:16
+     | | Harikrishnan Shaji | 30-Jul-22 | 13:53:05 | 16:06:49   | 2:13:43
+     | | Suraj S Bilgi      | 30-Jul-22 | 13:50:01 | 15:11:42   | 1:21:41
+     | | Shivan K           | 30-Jul-22 | 13:28:18 | 13:59:00   | 0:30:42
++------+--------------------+-----------+----------+------------+--------------+
+10 rows in set (0.00 sec)
+
+
+USE CASE 1
+==========
+
+note this table doesn't have any primary key column, if we are using a table without primary key then either we should go for single mapper 
+or --split-by <column_name> using an integer column.
+
+--delete-target-dir allows to re-execute the command by deleting the directory(if exists), otherwise the command will fail with file already exists.
+
+
+
+assume this table has 1000 rows  in the below import we are using 4 mappers the data will be devided equally into 4 part files.
+
+sqoop import --connect jdbc:mysql://localhost/ineuron -username root --password cloudera -table stgtbl -m 4 --split-by slno  --target-dir /user/cloudera/ineuron --delete-target-dir
+
+ [cloudera@quickstart ~]$ sqoop import --connect jdbc:mysql://localhost/ineuron -username root --password cloudera -table stgtbl -m 4 --split-by slno  --target-dir /user/cloudera/ineuron --delete-target-dir
+Warning: /usr/lib/sqoop/../accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+23/01/23 21:24:39 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6-cdh5.12.0
+23/01/23 21:24:39 WARN tool.BaseSqoopTool: Setting your password on the command-line is insecure. Consider using -P instead.
+23/01/23 21:24:41 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+23/01/23 21:24:41 INFO tool.CodeGenTool: Beginning code generation
+23/01/23 21:24:46 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `stgtbl` AS t LIMIT 1
+23/01/23 21:24:47 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `stgtbl` AS t LIMIT 1
+23/01/23 21:24:47 INFO orm.CompilationManager: HADOOP_MAPRED_HOME is /usr/lib/hadoop-mapreduce
+Note: /tmp/sqoop-cloudera/compile/d7d29ede3ae5267fd8d66f4ee2cd7998/stgtbl.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+23/01/23 21:25:09 INFO orm.CompilationManager: Writing jar file: /tmp/sqoop-cloudera/compile/d7d29ede3ae5267fd8d66f4ee2cd7998/stgtbl.jar
+23/01/23 21:25:22 INFO tool.ImportTool: Destination directory /user/cloudera/ineuron deleted.
+23/01/23 21:25:22 WARN manager.MySQLManager: It looks like you are importing from mysql.
+23/01/23 21:25:22 WARN manager.MySQLManager: This transfer can be faster! Use the --direct
+23/01/23 21:25:22 WARN manager.MySQLManager: option to exercise a MySQL-specific fast path.
+23/01/23 21:25:22 INFO manager.MySQLManager: Setting zero DATETIME behavior to convertToNull (mysql)
+23/01/23 21:25:22 INFO mapreduce.ImportJobBase: Beginning import of stgtbl
+23/01/23 21:25:22 INFO Configuration.deprecation: mapred.job.tracker is deprecated. Instead, use mapreduce.jobtracker.address
+23/01/23 21:25:23 INFO Configuration.deprecation: mapred.jar is deprecated. Instead, use mapreduce.job.jar
+23/01/23 21:25:23 INFO Configuration.deprecation: mapred.map.tasks is deprecated. Instead, use mapreduce.job.maps
+23/01/23 21:25:24 INFO client.RMProxy: Connecting to ResourceManager at /0.0.0.0:8032
+23/01/23 21:25:32 WARN hdfs.DFSClient: Caught exception
+java.lang.InterruptedException
+        at java.lang.Object.wait(Native Method)
+        at java.lang.Thread.join(Thread.java:1252)
+        at java.lang.Thread.join(Thread.java:1326)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.closeResponder(DFSOutputStream.java:952)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.endBlock(DFSOutputStream.java:690)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.run(DFSOutputStream.java:879)
+23/01/23 21:25:33 WARN hdfs.DFSClient: Caught exception
+java.lang.InterruptedException
+        at java.lang.Object.wait(Native Method)
+        at java.lang.Thread.join(Thread.java:1252)
+        at java.lang.Thread.join(Thread.java:1326)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.closeResponder(DFSOutputStream.java:952)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.endBlock(DFSOutputStream.java:690)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.run(DFSOutputStream.java:879)
+23/01/23 21:25:34 WARN hdfs.DFSClient: Caught exception
+java.lang.InterruptedException
+        at java.lang.Object.wait(Native Method)
+        at java.lang.Thread.join(Thread.java:1252)
+        at java.lang.Thread.join(Thread.java:1326)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.closeResponder(DFSOutputStream.java:952)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.endBlock(DFSOutputStream.java:690)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.run(DFSOutputStream.java:879)
+23/01/23 21:25:37 WARN hdfs.DFSClient: Caught exception
+java.lang.InterruptedException
+        at java.lang.Object.wait(Native Method)
+        at java.lang.Thread.join(Thread.java:1252)
+        at java.lang.Thread.join(Thread.java:1326)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.closeResponder(DFSOutputStream.java:952)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.endBlock(DFSOutputStream.java:690)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.run(DFSOutputStream.java:879)
+23/01/23 21:25:37 INFO db.DBInputFormat: Using read commited transaction isolation
+23/01/23 21:25:37 INFO db.DataDrivenDBInputFormat: BoundingValsQuery: SELECT MIN(`slno`), MAX(`slno`) FROM `stgtbl`
+23/01/23 21:25:37 INFO db.IntegerSplitter: Split size: 249; Num splits: 4 from: 1 to: 1000
+23/01/23 21:25:38 INFO mapreduce.JobSubmitter: number of splits:4
+23/01/23 21:25:39 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1674535144996_0001
+23/01/23 21:25:44 INFO impl.YarnClientImpl: Submitted application application_1674535144996_0001
+23/01/23 21:25:44 INFO mapreduce.Job: The url to track the job: http://quickstart.cloudera:8088/proxy/application_1674535144996_0001/
+23/01/23 21:25:44 INFO mapreduce.Job: Running job: job_1674535144996_0001
+23/01/23 21:27:05 INFO mapreduce.Job: Job job_1674535144996_0001 running in uber mode : false
+23/01/23 21:27:05 INFO mapreduce.Job:  map 0% reduce 0%
+23/01/23 21:28:15 INFO mapreduce.Job:  map 50% reduce 0%
+23/01/23 21:28:17 INFO mapreduce.Job:  map 100% reduce 0%
+23/01/23 21:28:19 INFO mapreduce.Job: Job job_1674535144996_0001 completed successfully
+23/01/23 21:28:20 INFO mapreduce.Job: Counters: 30
+        File System Counters
+                FILE: Number of bytes read=0
+                FILE: Number of bytes written=606848
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=424
+                HDFS: Number of bytes written=53860
+                HDFS: Number of read operations=16
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=8
+        Job Counters
+                Launched map tasks=4
+                Other local map tasks=4
+                Total time spent by all maps in occupied slots (ms)=274159
+                Total time spent by all reduces in occupied slots (ms)=0
+                Total time spent by all map tasks (ms)=274159
+                Total vcore-milliseconds taken by all map tasks=274159
+                Total megabyte-milliseconds taken by all map tasks=280738816
+        Map-Reduce Framework
+                Map input records=1000
+                Map output records=1000
+                Input split bytes=424
+                Spilled Records=0
+                Failed Shuffles=0
+                Merged Map outputs=0
+                GC time elapsed (ms)=3735
+                CPU time spent (ms)=6610
+                Physical memory (bytes) snapshot=431464448
+                Virtual memory (bytes) snapshot=10918236160
+                Total committed heap usage (bytes)=267911168
+        File Input Format Counters
+                Bytes Read=0
+        File Output Format Counters
+                Bytes Written=53860
+23/01/23 21:28:20 INFO mapreduce.ImportJobBase: Transferred 52.5977 KB in 177.0029 seconds (304.2889 bytes/sec)
+23/01/23 21:28:20 INFO mapreduce.ImportJobBase: Retrieved 1000 records.
+
+4 mappers are getting created 250 records per each mapper 
+
+[cloudera@quickstart ~]$ hdfs dfs -ls /user/cloudera/ineuron
+Found 5 items
+-rw-r--r--   1 cloudera cloudera          0 2023-01-23 21:28 /user/cloudera/ineuron/_SUCCESS
+-rw-r--r--   1 cloudera cloudera      13326 2023-01-23 21:28 /user/cloudera/ineuron/part-m-00000
+-rw-r--r--   1 cloudera cloudera      13631 2023-01-23 21:28 /user/cloudera/ineuron/part-m-00001
+-rw-r--r--   1 cloudera cloudera      13476 2023-01-23 21:28 /user/cloudera/ineuron/part-m-00002
+-rw-r--r--   1 cloudera cloudera      13427 2023-01-23 21:28 /user/cloudera/ineuron/part-m-00003
+
+to view the total count of records on cloudera use below command
+
+sqoop eval --connect jdbc:mysql://localhost/ineuron -username root --password cloudera --query "select count(*) from stgtbl"
+
+[cloudera@quickstart ~]$ sqoop eval --connect jdbc:mysql://localhost/ineuron -username root --password cloudera --query "select count(*) from stgtbl "
+Warning: /usr/lib/sqoop/../accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+23/01/23 21:37:24 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6-cdh5.12.0
+23/01/23 21:37:24 WARN tool.BaseSqoopTool: Setting your password on the command-line is insecure. Consider using -P instead.
+23/01/23 21:37:26 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+------------------------
+| count(*)             |
+------------------------
+| 1000                 |
+------------------------
+
+
+`simplylearn
+
+
+
+list databases from hdfs using sqoop
+
+sqoop list-databases --connect jdbc:mysql://localhost/ -username root --password cloudera;
+[cloudera@quickstart ~]$ sqoop list-databases --connect jdbc:mysql://localhost/ -username root --password cloudera;
+Warning: /usr/lib/sqoop/../accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+23/01/23 21:52:04 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6-cdh5.12.0
+23/01/23 21:52:04 WARN tool.BaseSqoopTool: Setting your password on the command-line is insecure. Consider using -P instead.
+23/01/23 21:52:06 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+information_schema
+cm
+db1
+firehose
+hue
+ineuron
+metastore
+munna
+mysql
+nav
+navms
+oozie
+raju
+retail_db
+rman
+sentry
+sqoop
+vasu_sqoop
+
+
+list the tables in retail_db from hdfs using sqoop
+sqoop list-databases --connect jdbc:mysql://localhost/retail_db  -username root --password cloudera;
+
+sqoop list-databases --connect jdbc:mysql://localhost/retail_db  -username root --password cloudera;
+Warning: /usr/lib/sqoop/../accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+23/01/23 21:53:33 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6-cdh5.12.0
+23/01/23 21:53:34 WARN tool.BaseSqoopTool: Setting your password on the command-line is insecure. Consider using -P instead.
+23/01/23 21:53:35 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+information_schema
+cm
+db1
+firehose
+hue
+ineuron
+metastore
+munna
+mysql
+nav
+navms
+oozie
+raju
+retail_db
+rman
+sentry
+sqoop
+vasu_sqoop
+==============================================
+
+filtering records with where clause
+
+sqoop import --connect jdbc:mysql://localhost/ineuron -username root --password cloudera -table stgtbl --where "slno > 1700"--split-by slno  --target-dir /user/cloudera/ineuron --delete-target-dir
+
+
+
+
+
+
+
+
