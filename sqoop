@@ -1,0 +1,54 @@
+[cloudera@quickstart ~]$ sqoop help
+Warning: /usr/lib/sqoop/../accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+23/01/23 20:43:01 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6-cdh5.12.0
+usage: sqoop COMMAND [ARGS]
+
+Available commands:
+  codegen            Generate code to interact with database records
+  create-hive-table  Import a table definition into Hive
+  eval               Evaluate a SQL statement and display the results
+  export             Export an HDFS directory to a database table
+  help               List available commands
+  import             Import a table from a database to HDFS
+  import-all-tables  Import tables from a database to HDFS
+  import-mainframe   Import datasets from a mainframe server to HDFS
+  job                Work with saved jobs
+  list-databases     List available databases on a server
+  list-tables        List available tables in a database
+  merge              Merge results of incremental imports
+  metastore          Run a standalone Sqoop metastore
+  version            Display version information
+  See 'sqoop help COMMAND' for information on a specific command.
+  
+  
+  Argument	Description
+--append	Append data to an existing dataset in HDFS
+--as-avrodatafile	Imports data to Avro Data Files
+--as-sequencefile	Imports data to SequenceFiles
+--as-textfile	Imports data as plain text (default)
+--boundary-query <statement>	Boundary query to use for creating splits
+--columns <col,col,col…>	Columns to import from table
+--direct	Use direct import fast path
+--direct-split-size <n>	Split the input stream every n bytes when importing in direct mode
+--inline-lob-limit <n>	Set the maximum size for an inline LOB
+-m,--num-mappers <n>	Use n map tasks to import in parallel
+-e,--query <statement>	Import the results of statement.
+--split-by <column-name>	Column of the table used to split work units
+--table <table-name>	Table to read
+--target-dir <dir>	HDFS destination dir
+--warehouse-dir <dir>	HDFS parent for table destination
+--where <where clause>	WHERE clause to use during import
+-z,--compress	Enable compression
+--compression-codec <c>	Use Hadoop codec (default gzip)
+--null-string <null-string>	The string to be written for a null value for string columns
+--null-non-string <null-string>	The string to be written for a null value for non-string columns
+
+======================================================================================================================
+
+
+
+Command to login to mysql in cloudera is show below ...
+[cloudera@quickstart ~]$ mysql -u root -p
+Enter password:cloudera
+
